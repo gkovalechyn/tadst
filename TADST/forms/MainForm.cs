@@ -1404,7 +1404,7 @@ namespace TADST {
 
             if (folderDialog.ShowDialog() == DialogResult.OK) {
                 string path = folderDialog.SelectedPath;
-                string[] parts = path.Split('/');
+                string[] parts = path.Split('\\');
 
                 this.oldSelectedPath = path;
 
