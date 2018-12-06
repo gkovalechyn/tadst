@@ -9,10 +9,8 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 
 
-namespace TADST
-{
-    public partial class MainForm : Form
-    {
+namespace TADST {
+    public partial class MainForm : Form {
         private readonly ProfileHandler _profileHandler;
         private Profile _activeProfile;
         private FileHandler _fileHandler;
@@ -21,8 +19,9 @@ namespace TADST
         public bool IsDirty { get; set; }
         public bool IsDirtyEnabled { get; set; }
 
-        public MainForm()
-        {
+        private string oldSelectedPath = "";
+
+        public MainForm() {
             InitializeComponent();
 
             ValidateCurrentDirectory();
@@ -37,11 +36,9 @@ namespace TADST
             InitGui();
         }
 
-        private void ValidateCurrentDirectory()
-        {
+        private void ValidateCurrentDirectory() {
             var path = Path.Combine(Environment.CurrentDirectory, "MPMissions");
-            if (!Directory.Exists(path))
-            {
+            if (!Directory.Exists(path)) {
                 MessageBox.Show("Are you sure you've put TADST in your ArmA game folder? " + Environment.NewLine +
                                 "No 'MPMissions' folder is present in the current folder", "Cannot run TADST",
                                 MessageBoxButtons.OK, MessageBoxIcon.Stop);
@@ -49,14 +46,12 @@ namespace TADST
             }
         }
 
-        private static ProfileHandler GetProfileHandler()
-        {
+        private static ProfileHandler GetProfileHandler() {
             var path = Path.Combine(Environment.CurrentDirectory, @"TADST\TADST.profiles");
             return File.Exists(path) ? LoadProfilesFromDisk() : new ProfileHandler();
         }
 
-        private void InitGui()
-        {
+        private void InitGui() {
             cmbProfiles.Items.AddRange(_profileHandler.Profiles.ToArray());
             cmbProfiles.SelectedIndex = 0;
 
@@ -69,8 +64,7 @@ namespace TADST
             DefaultPerformanceInfoLabel();
         }
 
-        private void DefaultPerformanceInfoLabel()
-        {
+        private void DefaultPerformanceInfoLabel() {
             txtPerformanceInfo.Text =
                 "Here you can may tune the servers performance and connectivity. Click a setting to get more detailed information.\n\n" +
                 "The greatest level of optimization can be achieved by setting the Maximum Messages Send and Minimum Bandwidth parameters.\n\n" +
@@ -80,19 +74,17 @@ namespace TADST
                 "If you see the server is not using bandwidth that it could use, you can try increasing values MaxMsgSend and MinBandwidth.\n\n";
         }
 
-        private void DefaultDifficultyInfoLabel()
-        {
+        private void DefaultDifficultyInfoLabel() {
             lblProfileDifficultyInfo.Text =
                 "In this tab you may set detailed properties for the different difficulty levels in the game.\n\n" +
                 "The default difficulty setting for missions is set in the missions tab.\n\n" +
                 "Select a property to get detailed information on it. Double click to check or uncheck items.";
         }
 
-        private void UpdateGuiServerRules()
-        {
+        private void UpdateGuiServerRules() {
             chkEnableVoting.Checked = _activeProfile.VotingEnabled;
             numVoteMissionPlayers.Value = _activeProfile.VoteMissionPlayers;
-            numVoteThreshold.Value = _activeProfile.VoteThreshold*100;
+            numVoteThreshold.Value = _activeProfile.VoteThreshold * 100;
 
             cmbVerifySignatures.SelectedIndex = _activeProfile.VerifySignatures;
             cmbAllowedFilePatching.SelectedIndex = _activeProfile.AllowFilePatching;
@@ -127,8 +119,7 @@ namespace TADST
         }
 
 
-        private void UpdateGui()
-        {
+        private void UpdateGui() {
             UpdateGuiProfile();
             UpdateGuiServerDetails();
             UpdateGuiRptTimeStamp();
@@ -152,37 +143,32 @@ namespace TADST
             chkDisableVon.Checked = _activeProfile.DisableVon;
         }
 
-        private void UpdateGuiStartupParameters()
-        {
+        private void UpdateGuiStartupParameters() {
             txtStartupParameters.Text = _activeProfile.GetStartupParameters();
         }
 
-        private void UpdateGuiView()
-        {
+        private void UpdateGuiView() {
             numTerrainGrid.Value = _activeProfile.TerrainGrid;
             numViewDistance.Value = _activeProfile.ViewDistance;
         }
 
-        private void UpdateGuiPerformance()
-        {
+        private void UpdateGuiPerformance() {
             txtMaxMessagesSend.Text = _activeProfile.MaxMsgSend.ToString();
             txtMaxSizeGuaranteed.Text = _activeProfile.MaxSizeGuaranteed.ToString();
             txtMaxSizeNonguaranteed.Text = _activeProfile.MaxSizeNonGuaranteed.ToString();
-            txtMinBandwidth.Text = (_activeProfile.MinBandWidth/1024).ToString();
-            txtMaxBandwidth.Text = (_activeProfile.MaxBandwidth/1048576).ToString();
+            txtMinBandwidth.Text = (_activeProfile.MinBandWidth / 1024).ToString();
+            txtMaxBandwidth.Text = (_activeProfile.MaxBandwidth / 1048576).ToString();
             txtMinErrorToSend.Text = _activeProfile.MinErrorToSend.ToString();
             txtMinErrorToSendNear.Text = _activeProfile.MinErrorToSendNear.ToString();
-            txtMaxCustomFileSize.Text = (_activeProfile.MaxCustomFileSize/8192).ToString();
+            txtMaxCustomFileSize.Text = (_activeProfile.MaxCustomFileSize / 8192).ToString();
             txtMaxPacketSize.Text = _activeProfile.MaxPacketSize.ToString(CultureInfo.InvariantCulture);
 
             chkEnableHT.Checked = _activeProfile.EnableHt;
         }
 
-        private void UpdateGuiMods()
-        {
+        private void UpdateGuiMods() {
             lstMods.Items.Clear();
-            foreach (var mod in _activeProfile.Mods)
-            {
+            foreach (var mod in _activeProfile.Mods) {
                 lstMods.Items.Add(mod.ToString(), mod.IsChecked);
             }
 
@@ -190,35 +176,30 @@ namespace TADST
             UpdateGuiSelectedMods();
         }
 
-        private void UpdateGuiSelectedMods()
-        {
+        private void UpdateGuiSelectedMods() {
             var mods = _activeProfile.Mods.Where(m => m.IsChecked);
             lblSelectedMods.Text = mods.Count().ToString();
             UpdateGuiStartupParameters();
         }
 
-        private void UpdateGuiNumOfMods()
-        {
+        private void UpdateGuiNumOfMods() {
             lblNumOfMods.Text = lstMods.Items.Count.ToString();
         }
 
-        private void UpdateGuiMissions()
-        {
+        private void UpdateGuiMissions() {
             IEnumerable<Mission> missions;
 
             int selectedIndex = cmbMissionFilter.SelectedIndex < 0 ? 0 : cmbMissionFilter.SelectedIndex;
 
             if (selectedIndex == 0)
                 missions = _activeProfile.Missions;
-            else
-            {
+            else {
                 string filter = cmbMissionFilter.Items[cmbMissionFilter.SelectedIndex].ToString();
                 missions = _activeProfile.Missions.Where(island => island.Island == filter);
             }
 
             lstMissions.Items.Clear();
-            foreach (Mission mission in missions)
-            {
+            foreach (Mission mission in missions) {
                 lstMissions.Items.Add(mission.ToString(), mission.IsChecked);
             }
 
@@ -228,13 +209,11 @@ namespace TADST
             cmbDifficulty.SelectedIndex = _activeProfile.MissionDifficulty;
         }
 
-        private void UpdateGuiNumOfMissions()
-        {
+        private void UpdateGuiNumOfMissions() {
             lblNumOfMissions.Text = lstMissions.Items.Count.ToString();
         }
 
-        private void UpdateGuiMissionFilter()
-        {
+        private void UpdateGuiMissionFilter() {
             cmbMissionFilter.Items.Clear();
             cmbMissionFilter.Items.Add("All");
             cmbMissionFilter.Items.AddRange(GetIslands().ToArray());
@@ -245,20 +224,17 @@ namespace TADST
         /// Get all available islands from the active profiles mission list
         /// </summary>
         /// <returns>List of available islands</returns>
-        private List<string> GetIslands()
-        {
+        private List<string> GetIslands() {
             var islands = new List<string>();
 
-            foreach (Mission mission in _activeProfile.Missions)
-            {
+            foreach (Mission mission in _activeProfile.Missions) {
                 //string island = mission.ToString().Split('.')[mission.ToString().Split('.').Count() - 2].ToLower();
 
                 string island = mission.Island;
 
                 island = Utilities.ToMixedCase(island);
 
-                if (!islands.Contains(island))
-                {
+                if (!islands.Contains(island)) {
                     islands.Add(island);
                 }
             }
@@ -267,8 +243,7 @@ namespace TADST
             return islands;
         }
 
-        private void UpdateGuiServerLogging()
-        {
+        private void UpdateGuiServerLogging() {
             txtConsoleLogfile.Text = _activeProfile.ConsoleLogfile;
             txtRankingFile.Text = _activeProfile.RankingFile;
             txtPidfile.Text = _activeProfile.PidFile;
@@ -276,8 +251,7 @@ namespace TADST
             chkNetlog.Checked = _activeProfile.Netlog;
         }
 
-        private void UpdateGuiServerDetails()
-        {
+        private void UpdateGuiServerDetails() {
             txtServerName.Text = _activeProfile.ServerName;
             txtPassword.Text = _activeProfile.Password;
             txtAdminPassword.Text = _activeProfile.AdminPassword;
@@ -293,8 +267,7 @@ namespace TADST
             txtLocalIp.Text = _activeProfile.LocalIps;
         }
 
-        private void UpdateGuiProfile()
-        {
+        private void UpdateGuiProfile() {
             txtServerExe.Text = _activeProfile.ServerExePath;
             txtExtraParameters.Text = _activeProfile.ExtraParameters;
             //txtIngameName.Text = _activeProfile.InGameName;
@@ -308,14 +281,12 @@ namespace TADST
         /// <summary>
         /// Update RPT timestamp format list from profile
         /// </summary>
-        private void UpdateGuiRptTimeStamp()
-        {
+        private void UpdateGuiRptTimeStamp() {
             cmbTimeStampFormat.Items.Clear();
             cmbTimeStampFormat.Items.AddRange(_activeProfile.RptTimeStamps.ToArray());
         }
 
-        private void UpdateServerScripting()
-        {
+        private void UpdateServerScripting() {
             txtDoubleIdDetected.Text = _activeProfile.DoubleIdDetected;
             txtOnUserConnected.Text = _activeProfile.OnUserConnected;
             txtOnUserDisconnected.Text = _activeProfile.OnUserDisconnected;
@@ -328,8 +299,7 @@ namespace TADST
         /// <summary>
         /// Update difficulty values in Gui
         /// </summary>
-        private void UpdateGuiDifficulty(DifficultySetting difficulty)
-        {
+        private void UpdateGuiDifficulty(DifficultySetting difficulty) {
             IsDirtyEnabled = false;
             GetDifficultyItems(difficulty.DifficultyItems);
             GetSkillValues(difficulty);
@@ -339,8 +309,7 @@ namespace TADST
         /// <summary>
         /// Get skill values from selected difficulty
         /// </summary>
-        private void GetSkillValues(DifficultySetting difficulty)
-        {
+        private void GetSkillValues(DifficultySetting difficulty) {
             numSkillAI.Value = difficulty.SkillAI;
             numPrecisionAI.Value = difficulty.PrecisionAI;
             cmbAILevelPreset.SelectedIndex = difficulty.AILevelPreset;
@@ -350,30 +319,25 @@ namespace TADST
         /// Update difficulty items listbox in Gui
         /// </summary>
         /// <param name="diffItems">The list of items to use</param>
-        private void GetDifficultyItems(IEnumerable<DifficultyItem> diffItems)
-        {
+        private void GetDifficultyItems(IEnumerable<DifficultyItem> diffItems) {
             clbDifficultyItems.Items.Clear();
 
-            foreach (DifficultyItem item in diffItems)
-            {
+            foreach (DifficultyItem item in diffItems) {
                 clbDifficultyItems.Items.Add(item.ToString(), item.IsChecked);
             }
         }
 
-        private void btnProfileNew_Click(object sender, EventArgs e)
-        {
+        private void btnProfileNew_Click(object sender, EventArgs e) {
             NewProfile();
         }
 
         /// <summary>
         /// Create and save new profile with current settings
         /// </summary>
-        private void NewProfile()
-        {
+        private void NewProfile() {
             var profileNameForm = new NewProfileForm();
 
-            if (profileNameForm.ShowDialog() == DialogResult.OK)
-            {
+            if (profileNameForm.ShowDialog() == DialogResult.OK) {
                 _activeProfile.ProfileName = profileNameForm.ProfileName;
                 _profileHandler.AddProfile(Utilities.DeepClone(_activeProfile));
 
@@ -387,13 +351,11 @@ namespace TADST
         /// <summary>
         /// Write profiles to disk
         /// </summary>
-        private void SaveProfilesToDisk()
-        {
+        private void SaveProfilesToDisk() {
             var serializer = new BinaryFormatter();
 
             var filename = Path.Combine(Environment.CurrentDirectory, @"TADST\TADST.profiles");
-            using (FileStream fileStream = File.OpenWrite(filename))
-            {
+            using (FileStream fileStream = File.OpenWrite(filename)) {
                 serializer.Serialize(fileStream, _profileHandler);
             }
         }
@@ -402,21 +364,16 @@ namespace TADST
         /// Load profiles from disk
         /// </summary>
         /// <returns>A ProfileHandler object deserialized from disk</returns>
-        private static ProfileHandler LoadProfilesFromDisk()
-        {
+        private static ProfileHandler LoadProfilesFromDisk() {
             var serializer = new BinaryFormatter();
             var filename = Path.Combine(Environment.CurrentDirectory, @"TADST\TADST.profiles");
 
-            using (FileStream fileStream = File.OpenRead(filename))
-            {
+            using (FileStream fileStream = File.OpenRead(filename)) {
                 ProfileHandler profileHandler;
 
-                try
-                {
-                    profileHandler = (ProfileHandler) serializer.Deserialize(fileStream);
-                }
-                catch (System.Runtime.Serialization.SerializationException)
-                {
+                try {
+                    profileHandler = (ProfileHandler)serializer.Deserialize(fileStream);
+                } catch (System.Runtime.Serialization.SerializationException) {
                     MessageBox.Show(
                         "Sorry, your 'TADST.profiles' file is either corrupted or incompatible with the current version of TADST. "
                         + Environment.NewLine + Environment.NewLine
@@ -432,21 +389,18 @@ namespace TADST
         /// <summary>
         /// Get profiles from profile handler and put them in the profiles menu
         /// </summary>
-        private void UpdateProfiles()
-        {
+        private void UpdateProfiles() {
             cmbProfiles.Items.Clear();
             cmbProfiles.Items.AddRange(_profileHandler.Profiles.ToArray());
 
-            if (cmbProfiles.Items.Count > 0)
-            {
+            if (cmbProfiles.Items.Count > 0) {
                 cmbProfiles.SelectedIndex = _profileIndex;
                 LoadProfile();
             }
         }
 
 
-        private void MainForm_Load(object sender, EventArgs e)
-        {
+        private void MainForm_Load(object sender, EventArgs e) {
             AddIsDirtyEventHandler(this);
         }
 
@@ -454,106 +408,83 @@ namespace TADST
         /// Recursive method to add the IsDirty event handler to all controls.
         /// </summary>
         /// <param name="parent"></param>
-        private void AddIsDirtyEventHandler(Control parent)
-        {
-            foreach (Control c in parent.Controls)
-            {
-                if (c is TextBox || c is MaskedTextBox)
-                {
+        private void AddIsDirtyEventHandler(Control parent) {
+            foreach (Control c in parent.Controls) {
+                if (c is TextBox || c is MaskedTextBox) {
                     c.TextChanged += IsDirtyTrueHandler;
-                }
-                else if (c is CheckBox)
-                {
-                    ((CheckBox) c).CheckStateChanged += IsDirtyTrueHandler;
-                }
-                else if (c is NumericUpDown)
-                {
-                    ((NumericUpDown) c).ValueChanged += IsDirtyTrueHandler;
-                }
-                else
-                {
+                } else if (c is CheckBox) {
+                    ((CheckBox)c).CheckStateChanged += IsDirtyTrueHandler;
+                } else if (c is NumericUpDown) {
+                    ((NumericUpDown)c).ValueChanged += IsDirtyTrueHandler;
+                } else {
                     AddIsDirtyEventHandler(c);
                 }
             }
         }
 
-        private void numSkillAI_Click(object sender, EventArgs e)
-        {
+        private void numSkillAI_Click(object sender, EventArgs e) {
             lblProfileDifficultyInfo.Text = "AI tactics skill";
         }
 
-        private void numPrecisionAI_Click(object sender, EventArgs e)
-        {
+        private void numPrecisionAI_Click(object sender, EventArgs e) {
             lblProfileDifficultyInfo.Text = "AI shooting precision";
         }
 
-        private void tabContainer_Click(object sender, EventArgs e)
-        {
+        private void tabContainer_Click(object sender, EventArgs e) {
             DefaultDifficultyInfoLabel();
             DefaultPerformanceInfoLabel();
         }
 
-        private void chkTooltips_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkTooltips_CheckedChanged(object sender, EventArgs e) {
             toolTip1.Active = chkTooltips.Checked;
             _activeProfile.ToolTips = chkTooltips.Checked;
         }
 
-        private void chkRequiredBuild_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkRequiredBuild_CheckedChanged(object sender, EventArgs e) {
             txtRequiredBuild.Enabled = chkRequiredBuild.Checked;
             _activeProfile.RequiredBuildEnabled = chkRequiredBuild.Checked;
         }
 
-        private void tabPerformance_Click(object sender, EventArgs e)
-        {
+        private void tabPerformance_Click(object sender, EventArgs e) {
         }
 
-        private void chkEnableVoting_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkEnableVoting_CheckedChanged(object sender, EventArgs e) {
             numVoteMissionPlayers.Enabled = chkEnableVoting.Checked;
             numVoteThreshold.Enabled = chkEnableVoting.Checked;
             _activeProfile.VotingEnabled = chkEnableVoting.Checked;
         }
 
-        private void rbRecruit_CheckedChanged(object sender, EventArgs e)
-        {
+        private void rbRecruit_CheckedChanged(object sender, EventArgs e) {
             this.clbDifficultyItems.Enabled = false;
             UpdateGuiDifficulty(GetCurrentDifficulty());
         }
 
-        private void rbRegular_CheckedChanged(object sender, EventArgs e)
-        {
+        private void rbRegular_CheckedChanged(object sender, EventArgs e) {
             this.clbDifficultyItems.Enabled = false;
             UpdateGuiDifficulty(GetCurrentDifficulty());
         }
 
-        private void rbVeteran_CheckedChanged(object sender, EventArgs e)
-        {
+        private void rbVeteran_CheckedChanged(object sender, EventArgs e) {
             this.clbDifficultyItems.Enabled = false;
             UpdateGuiDifficulty(GetCurrentDifficulty());
         }
 
-        private void rbExpert_CheckedChanged(object sender, EventArgs e)
-        {
+        private void rbExpert_CheckedChanged(object sender, EventArgs e) {
             this.clbDifficultyItems.Enabled = false;
             UpdateGuiDifficulty(GetCurrentDifficulty());
         }
 
-        private void rbCustom_CheckedChanged(object sender, EventArgs e)
-        {
+        private void rbCustom_CheckedChanged(object sender, EventArgs e) {
             this.clbDifficultyItems.Enabled = true;
             UpdateGuiDifficulty(GetCurrentDifficulty());
         }
 
-        private void clbDifficultyItems_SelectedIndexChanged(object sender, EventArgs e)
-        {
+        private void clbDifficultyItems_SelectedIndexChanged(object sender, EventArgs e) {
             lblProfileDifficultyInfo.Text =
                 GetCurrentDifficulty().DifficultyItems[clbDifficultyItems.SelectedIndex].Info;
         }
 
-        private void resetProfile_Click(object sender, EventArgs e)
-        {
+        private void resetProfile_Click(object sender, EventArgs e) {
             if (MessageBox.Show(string.Format("Reset '" + SelectedDifficulty + "' settings to default values?"),
                                 "Reset difficulty settings", MessageBoxButtons.YesNo) != DialogResult.Yes) return;
 
@@ -566,57 +497,44 @@ namespace TADST
             IsDirty = true;
         }
 
-        private void lblProfileDifficultyInfo_Click(object sender, EventArgs e)
-        {
+        private void lblProfileDifficultyInfo_Click(object sender, EventArgs e) {
             DefaultDifficultyInfoLabel();
         }
 
-        private void txtMaxBandwidth_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
+        private void txtMaxBandwidth_TextChanged(object sender, EventArgs e) {
+            try {
                 var value = string.IsNullOrEmpty(txtMaxBandwidth.Text)
                                 ? 0
-                                : Convert.ToInt32(txtMaxBandwidth.Text)*1048576;
+                                : Convert.ToInt32(txtMaxBandwidth.Text) * 1048576;
                 toolTip1.SetToolTip(txtMaxBandwidth, "Value added to config-file:  " + value + " bits");
                 _activeProfile.MaxBandwidth = value;
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 MessageBox.Show(exception.Message);
                 txtMaxBandwidth.Text = "0";
             }
         }
 
-        private void txtMinBandwidth_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                var value = string.IsNullOrEmpty(txtMinBandwidth.Text) ? 0 : Convert.ToInt32(txtMinBandwidth.Text)*1024;
+        private void txtMinBandwidth_TextChanged(object sender, EventArgs e) {
+            try {
+                var value = string.IsNullOrEmpty(txtMinBandwidth.Text) ? 0 : Convert.ToInt32(txtMinBandwidth.Text) * 1024;
 
                 toolTip1.SetToolTip(txtMinBandwidth, "Value added to config:  " + value + " bits");
                 _activeProfile.MinBandWidth = value;
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 MessageBox.Show(exception.Message);
                 txtMinBandwidth.Text = "0";
             }
         }
 
-        private void txtMaxCustomFileSize_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
+        private void txtMaxCustomFileSize_TextChanged(object sender, EventArgs e) {
+            try {
                 var value = string.IsNullOrEmpty(txtMaxCustomFileSize.Text)
                                 ? 0
-                                : Convert.ToInt32(txtMaxCustomFileSize.Text)*8192;
+                                : Convert.ToInt32(txtMaxCustomFileSize.Text) * 8192;
 
                 toolTip1.SetToolTip(txtMaxCustomFileSize, "Value added to config:  " + value + " bits");
                 _activeProfile.MaxCustomFileSize = value;
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 MessageBox.Show(exception.Message);
                 txtMaxCustomFileSize.Text = "0";
             }
@@ -626,239 +544,192 @@ namespace TADST
         /// Check if pressed key is a digit
         /// </summary>
         /// <param name="e">Pressed key</param>
-        private static void CheckIfKeyIsDigit(KeyPressEventArgs e)
-        {
+        private static void CheckIfKeyIsDigit(KeyPressEventArgs e) {
             if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
                 e.Handled = true;
         }
 
-        private static void CheckIfKeyIsDigitOrDot(KeyPressEventArgs e)
-        {
+        private static void CheckIfKeyIsDigitOrDot(KeyPressEventArgs e) {
             if (!char.IsDigit(e.KeyChar) &&
                 !char.IsControl(e.KeyChar) &&
                 e.KeyChar != '.' &&
-                e.KeyChar != ',')
-            {
+                e.KeyChar != ',') {
                 e.Handled = true;
             }
         }
 
-        private static void CheckKeyForFile(KeyPressEventArgs e)
-        {
+        private static void CheckKeyForFile(KeyPressEventArgs e) {
             if (e.KeyChar == '/' ||
                 e.KeyChar == '\u005C' ||
                 e.KeyChar == ':' ||
                 e.KeyChar == '?' ||
                 e.KeyChar == '*' ||
                 e.KeyChar == '"' ||
-                e.KeyChar == ' ')
-            {
+                e.KeyChar == ' ') {
                 e.Handled = true;
             }
         }
 
-        private void txtMaxMessagesSend_KeyPress(object sender, KeyPressEventArgs e)
-        {
+        private void txtMaxMessagesSend_KeyPress(object sender, KeyPressEventArgs e) {
             CheckIfKeyIsDigit(e);
         }
 
-        private void txtMaxSizeGuaranteed_KeyPress(object sender, KeyPressEventArgs e)
-        {
+        private void txtMaxSizeGuaranteed_KeyPress(object sender, KeyPressEventArgs e) {
             CheckIfKeyIsDigit(e);
         }
 
-        private void txtMaxSizeNonguaranteed_KeyPress(object sender, KeyPressEventArgs e)
-        {
+        private void txtMaxSizeNonguaranteed_KeyPress(object sender, KeyPressEventArgs e) {
             CheckIfKeyIsDigit(e);
         }
 
-        private void txtMinBandwidth_KeyPress(object sender, KeyPressEventArgs e)
-        {
+        private void txtMinBandwidth_KeyPress(object sender, KeyPressEventArgs e) {
             CheckIfKeyIsDigit(e);
         }
 
-        private void txtMaxBandwidth_KeyPress(object sender, KeyPressEventArgs e)
-        {
+        private void txtMaxBandwidth_KeyPress(object sender, KeyPressEventArgs e) {
             CheckIfKeyIsDigit(e);
         }
 
-        private void txtMaxCustomFileSize_KeyPress(object sender, KeyPressEventArgs e)
-        {
+        private void txtMaxCustomFileSize_KeyPress(object sender, KeyPressEventArgs e) {
             CheckIfKeyIsDigit(e);
         }
 
-        private void txtMinErrorToSend_KeyPress(object sender, KeyPressEventArgs e)
-        {
+        private void txtMinErrorToSend_KeyPress(object sender, KeyPressEventArgs e) {
             CheckIfKeyIsDigitOrDot(e);
         }
 
-        private void txtMinErrorToSendNear_KeyPress(object sender, KeyPressEventArgs e)
-        {
+        private void txtMinErrorToSendNear_KeyPress(object sender, KeyPressEventArgs e) {
             CheckIfKeyIsDigitOrDot(e);
         }
 
-        private void txtPerformanceInfo_Click(object sender, EventArgs e)
-        {
+        private void txtPerformanceInfo_Click(object sender, EventArgs e) {
             DefaultPerformanceInfoLabel();
         }
 
-        private void clbDifficultyItems_ItemCheck(object sender, ItemCheckEventArgs e)
-        {
+        private void clbDifficultyItems_ItemCheck(object sender, ItemCheckEventArgs e) {
             var index = clbDifficultyItems.SelectedIndex;
 
             DifficultySetting difficulty = GetCurrentDifficulty();
 
-            if (index > -1)
-            {
-                if (!difficulty.DifficultyItems[index].IsEnabled)
-                {
+            if (index > -1) {
+                if (!difficulty.DifficultyItems[index].IsEnabled) {
                     e.NewValue = e.CurrentValue;
-                }
-                else
-                {
+                } else {
                     GetCurrentDifficulty().DifficultyItems[index].IsChecked = Convert.ToBoolean(e.NewValue);
                     IsDirty = true;
                 }
             }
         }
 
-        private DifficultySetting GetCurrentDifficulty()
-        {
+        private DifficultySetting GetCurrentDifficulty() {
             SelectedDifficulty = "custom";
             return _activeProfile.DiffCustom;
         }
 
-        private void numSkillAI_ValueChanged(object sender, EventArgs e)
-        {
+        private void numSkillAI_ValueChanged(object sender, EventArgs e) {
             GetCurrentDifficulty().SkillAI = numSkillAI.Value;
         }
 
-        private void numPrecisionAI_ValueChanged(object sender, EventArgs e)
-        {
+        private void numPrecisionAI_ValueChanged(object sender, EventArgs e) {
             GetCurrentDifficulty().PrecisionAI = numPrecisionAI.Value;
         }
 
-        private void txtMaxMessagesSend_Click(object sender, EventArgs e)
-        {
+        private void txtMaxMessagesSend_Click(object sender, EventArgs e) {
             txtPerformanceInfo.Text =
                 "Maximum number of messages that can be sent in one simulation cycle.\n\nIncreasing this value can decrease lag on high upload bandwidth servers.\n\nDefault number of messages is 128";
         }
 
-        private void txtMaxSizeGuaranteed_Click(object sender, EventArgs e)
-        {
+        private void txtMaxSizeGuaranteed_Click(object sender, EventArgs e) {
             txtPerformanceInfo.Text =
                 "Maximum size of guaranteed packet in bytes (without headers). Small messages are packed to larger frames.\n\nGuaranteed messages are used for non-repetitive events like shooting.\n\nDefault value is 512 Bytes";
         }
 
-        private void txtMaxSizeNonguaranteed_Click(object sender, EventArgs e)
-        {
+        private void txtMaxSizeNonguaranteed_Click(object sender, EventArgs e) {
             txtPerformanceInfo.Text =
                 "Maximum size of non-guaranteed packet in bytes (without headers).\n\nNon-guaranteed messages are used for repetitive updates like soldier or vehicle position. \n\nIncreasing this value may improve bandwidth requirement, but it may increase lag.\n\nDefault value is 256 Bytes";
         }
 
-        private void txtMinBandwidth_Click(object sender, EventArgs e)
-        {
+        private void txtMinBandwidth_Click(object sender, EventArgs e) {
             txtPerformanceInfo.Text =
                 "Bandwidth the server is guaranteed to have. \n\nThis value helps server to estimate bandwidth available. Increasing it to too optimistic values can increase lag and CPU load, as too many messages will be sent but discarded.\n\nEnter in kbit/s, application will convert into bits for the config file. You may hold the pointer over the textfield to see the value converted into bits.\n\nDefault value is 128 kbit/s (131072 bits)";
         }
 
-        private void txtMaxBandwidth_Click(object sender, EventArgs e)
-        {
+        private void txtMaxBandwidth_Click(object sender, EventArgs e) {
             txtPerformanceInfo.Text =
                 "Bandwidth the server is guaranteed to never have. This value helps the server to estimate bandwidth available.\n\nEnter in mbit/s, application will convert into bits for the config file. You may hold the pointer over the textfield to see the value converted into bits.\n\nDefault value is 2000 mbit/s.\n(maximum amount the config will use is 2047mbit/s)";
         }
 
-        private void txtMinErrorToSend_Click(object sender, EventArgs e)
-        {
+        private void txtMinErrorToSend_Click(object sender, EventArgs e) {
             txtPerformanceInfo.Text =
                 "Minimum errors to send updates across network.\n\nLower values can make units observed by binoculars or sniper rifle move smoother, but will impact server performance.\n\nDefault value is 0.001";
         }
 
-        private void txtMinErrorToSendNear_Click(object sender, EventArgs e)
-        {
+        private void txtMinErrorToSendNear_Click(object sender, EventArgs e) {
             txtPerformanceInfo.Text =
                 "Minimum errors to send updates across network for near units.\n\nUsing larger value can reduce traffic sent for near units. Used to control client to server traffic as well.\n\nDefault: 0.01";
         }
 
-        private void txtMaxCustomFileSize_Click(object sender, EventArgs e)
-        {
+        private void txtMaxCustomFileSize_Click(object sender, EventArgs e) {
             txtPerformanceInfo.Text =
                 "Maximum custom File Size. Users with custom face or custom sound larger than this size are kicked when trying to connect.\n\nEnter in kilobytes (kB), the launcher will convert the amount to bits for server config. You may hold the pointer over the textfield to see the value converted into bits\n\nDefault file size is 160kB";
         }
 
-        private void numTerrainGrid_Click(object sender, EventArgs e)
-        {
+        private void numTerrainGrid_Click(object sender, EventArgs e) {
             txtPerformanceInfo.Text =
                 "Terrain Grid\n\nSet default terrain resolution. This also sets the drawing distance of grass. Lower value will render grass at greater distance. Set to 50 to turn grass off completely.\n\nThis value you choose here may be overidden by scripting in the mission.\n\nDefault Multiplayer value is 25.";
         }
 
-        private void numViewDistance_Click(object sender, EventArgs e)
-        {
+        private void numViewDistance_Click(object sender, EventArgs e) {
             txtPerformanceInfo.Text =
                 "View Distance.\n\nSets the server default view distance. Minimum is 500 meters, maximum is 10,000 meters.\n\nRender distance is 3/4 of view distance - for 2000 metres, objects will be render up to 1500 metres. \n\nView distance also defines the maximum distance between a unit and any other unit they can know about. Higher view distance will involve more AI simulation cycles for every unit, which might cause lower performance.\n\nThis setting may be overridden by mission scripting.\n\nDefault is 2000";
         }
 
-        private void btnResetPerformance_Click(object sender, EventArgs e)
-        {
+        private void btnResetPerformance_Click(object sender, EventArgs e) {
             if (
                 MessageBox.Show("Reset performance tuning settings to default?", "Reset performance",
-                                MessageBoxButtons.YesNo) == DialogResult.Yes)
-            {
+                                MessageBoxButtons.YesNo) == DialogResult.Yes) {
                 _activeProfile.SetDefaultPerformance();
                 UpdateGuiPerformance();
             }
         }
 
-        private void btnProfileSave_Click(object sender, EventArgs e)
-        {
+        private void btnProfileSave_Click(object sender, EventArgs e) {
             SaveProfileDialog();
         }
 
-        private void SaveProfileDialog()
-        {
+        private void SaveProfileDialog() {
             DialogResult dialog = MessageBox.Show(
                 "Are you sure you wish to save the profile '" + cmbProfiles.SelectedItem +
                 "' with the current settings?"
                 , "Save profile?", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
-            if (dialog == DialogResult.Yes)
-            {
+            if (dialog == DialogResult.Yes) {
                 SaveProfile();
             }
         }
 
-        private void SaveProfile()
-        {
-            if (_profileHandler.UpdateProfile(cmbProfiles.SelectedIndex, _activeProfile))
-            {
+        private void SaveProfile() {
+            if (_profileHandler.UpdateProfile(cmbProfiles.SelectedIndex, _activeProfile)) {
                 _profileIndex = cmbProfiles.SelectedIndex;
                 UpdateProfiles();
                 SaveProfilesToDisk();
             }
         }
 
-        private void cmbProfiles_SelectionChangeCommitted(object sender, EventArgs e)
-        {
-            if (IsDirty)
-            {
+        private void cmbProfiles_SelectionChangeCommitted(object sender, EventArgs e) {
+            if (IsDirty) {
                 if (MessageBox.Show("Switch profile without saving changes?", "Switch without saving?",
-                                    MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
-                {
+                                    MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK) {
                     LoadProfile();
-                }
-                else
-                {
+                } else {
                     cmbProfiles.SelectedIndex = _profileIndex;
                 }
-            }
-            else
-            {
+            } else {
                 LoadProfile();
             }
         }
 
-        private void LoadProfile()
-        {
+        private void LoadProfile() {
             IsDirtyEnabled = false; // Walkaround, fix this a rainy day
 
             int index = cmbProfiles.SelectedIndex;
@@ -874,74 +745,61 @@ namespace TADST
             IsDirty = false;
         }
 
-        private void txtServerName_TextChanged(object sender, EventArgs e)
-        {
+        private void txtServerName_TextChanged(object sender, EventArgs e) {
             _activeProfile.ServerName = txtServerName.Text;
         }
 
-        private void txtPassword_TextChanged(object sender, EventArgs e)
-        {
+        private void txtPassword_TextChanged(object sender, EventArgs e) {
             _activeProfile.Password = txtPassword.Text;
         }
 
-        private void numMaxPlayers_ValueChanged(object sender, EventArgs e)
-        {
-            _activeProfile.MaxPlayers = (int) numMaxPlayers.Value;
+        private void numMaxPlayers_ValueChanged(object sender, EventArgs e) {
+            _activeProfile.MaxPlayers = (int)numMaxPlayers.Value;
         }
 
-        private void txtAdminPassword_TextChanged(object sender, EventArgs e)
-        {
+        private void txtAdminPassword_TextChanged(object sender, EventArgs e) {
             _activeProfile.AdminPassword = txtAdminPassword.Text;
         }
 
-        private void txtConsoleLogfile_TextChanged(object sender, EventArgs e)
-        {
+        private void txtConsoleLogfile_TextChanged(object sender, EventArgs e) {
             _activeProfile.ConsoleLogfile = txtConsoleLogfile.Text;
             UpdateGuiStartupParameters();
         }
 
-        private void txtRankingFile_TextChanged(object sender, EventArgs e)
-        {
+        private void txtRankingFile_TextChanged(object sender, EventArgs e) {
             _activeProfile.RankingFile = txtRankingFile.Text;
             UpdateGuiStartupParameters();
         }
 
-        private void txtPidfile_TextChanged(object sender, EventArgs e)
-        {
+        private void txtPidfile_TextChanged(object sender, EventArgs e) {
             _activeProfile.PidFile = txtPidfile.Text;
             UpdateGuiStartupParameters();
         }
 
-        private void cmbTimeStampFormat_SelectedIndexChanged(object sender, EventArgs e)
-        {
+        private void cmbTimeStampFormat_SelectedIndexChanged(object sender, EventArgs e) {
             _activeProfile.RptTimeStampIndex = cmbTimeStampFormat.SelectedIndex;
         }
 
-        private void chkNetlog_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkNetlog_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.Netlog = chkNetlog.Checked;
             UpdateGuiStartupParameters();
         }
 
-        private void chkPersistentBattlefield_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkPersistentBattlefield_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.PersistantBattlefield = chkPersistentBattlefield.Checked;
             chkAutoinit.Enabled = chkPersistentBattlefield.Checked;
             UpdateGuiStartupParameters();
         }
 
-        private void numCodecQuality_ValueChanged(object sender, EventArgs e)
-        {
-            _activeProfile.VonQuality = (int) numCodecQuality.Value;
+        private void numCodecQuality_ValueChanged(object sender, EventArgs e) {
+            _activeProfile.VonQuality = (int)numCodecQuality.Value;
         }
 
-        private void chkDisableVon_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkDisableVon_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.DisableVon = chkDisableVon.Checked;
         }
 
-        private void txtServerExe_TextChanged(object sender, EventArgs e)
-        {
+        private void txtServerExe_TextChanged(object sender, EventArgs e) {
             _activeProfile.ServerExePath = txtServerExe.Text;
             chkBeta.Checked = (_activeProfile.ServerExePath.Contains(@"\beta") &&
                                _activeProfile.ServerExePath.Contains("arma2"))
@@ -949,50 +807,39 @@ namespace TADST
                                   : false;
         }
 
-        private void numVoteMissionPlayers_ValueChanged(object sender, EventArgs e)
-        {
-            _activeProfile.VoteMissionPlayers = (int) numVoteMissionPlayers.Value;
+        private void numVoteMissionPlayers_ValueChanged(object sender, EventArgs e) {
+            _activeProfile.VoteMissionPlayers = (int)numVoteMissionPlayers.Value;
         }
 
-        private void numVoteThreshold_ValueChanged(object sender, EventArgs e)
-        {
-            _activeProfile.VoteThreshold = numVoteThreshold.Value/100;
+        private void numVoteThreshold_ValueChanged(object sender, EventArgs e) {
+            _activeProfile.VoteThreshold = numVoteThreshold.Value / 100;
         }
 
-        private void cmbVerifySignatures_SelectedIndexChanged(object sender, EventArgs e)
-        {
+        private void cmbVerifySignatures_SelectedIndexChanged(object sender, EventArgs e) {
             _activeProfile.VerifySignatures = cmbVerifySignatures.SelectedIndex;
         }
 
-        private void txtRequiredBuild_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
+        private void txtRequiredBuild_TextChanged(object sender, EventArgs e) {
+            try {
                 _activeProfile.RequiredBuild = string.IsNullOrEmpty(txtRequiredBuild.Text)
                                                    ? 0
                                                    : Convert.ToInt32(txtRequiredBuild.Text);
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 MessageBox.Show(exception.Message);
                 txtRequiredBuild.Text = "";
             }
         }
 
-        private void chkKickDuplicates_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkKickDuplicates_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.KickDuplicates = chkKickDuplicates.Checked;
         }
 
-        private void numMotdInterval_ValueChanged(object sender, EventArgs e)
-        {
-            _activeProfile.MotdInterval = (int) numMotdInterval.Value;
+        private void numMotdInterval_ValueChanged(object sender, EventArgs e) {
+            _activeProfile.MotdInterval = (int)numMotdInterval.Value;
         }
 
-        private void cmbDifficulty_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (lstMissions.SelectedIndex > -1)
-            {
+        private void cmbDifficulty_SelectedIndexChanged(object sender, EventArgs e) {
+            if (lstMissions.SelectedIndex > -1) {
                 Mission mission =
                     _activeProfile.Missions.Find(
                         mis => mis.Name == lstMissions.Items[lstMissions.SelectedIndex].ToString());
@@ -1001,151 +848,117 @@ namespace TADST
             }
         }
 
-        private void txtMaxMessagesSend_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
+        private void txtMaxMessagesSend_TextChanged(object sender, EventArgs e) {
+            try {
                 _activeProfile.MaxMsgSend = string.IsNullOrEmpty(txtMaxMessagesSend.Text)
                                                 ? 0
                                                 : Convert.ToInt32(txtMaxMessagesSend.Text);
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 MessageBox.Show(exception.Message);
                 txtMaxMessagesSend.Text = "0";
             }
         }
 
-        private void txtMaxSizeGuaranteed_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
+        private void txtMaxSizeGuaranteed_TextChanged(object sender, EventArgs e) {
+            try {
                 _activeProfile.MaxSizeGuaranteed = string.IsNullOrEmpty(txtMaxSizeGuaranteed.Text)
                                                        ? 0
                                                        : Convert.ToInt32(txtMaxSizeGuaranteed.Text);
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 MessageBox.Show(exception.Message);
                 txtMaxSizeGuaranteed.Text = "0";
             }
         }
 
-        private void txtMaxSizeNonguaranteed_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
+        private void txtMaxSizeNonguaranteed_TextChanged(object sender, EventArgs e) {
+            try {
                 _activeProfile.MaxSizeNonGuaranteed = string.IsNullOrEmpty(txtMaxSizeNonguaranteed.Text)
                                                           ? 0
                                                           : Convert.ToInt32(txtMaxSizeNonguaranteed.Text);
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 MessageBox.Show(exception.Message);
                 txtMaxSizeNonguaranteed.Text = "0";
             }
         }
 
-        private void txtMinErrorToSend_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
+        private void txtMinErrorToSend_TextChanged(object sender, EventArgs e) {
+            try {
                 _activeProfile.MinErrorToSend = string.IsNullOrEmpty(txtMinErrorToSend.Text)
                                                     ? 0
                                                     : Convert.ToDouble(txtMinErrorToSend.Text);
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 MessageBox.Show(exception.Message);
                 txtMinErrorToSend.Text = "0";
             }
         }
 
-        private void txtMinErrorToSendNear_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
+        private void txtMinErrorToSendNear_TextChanged(object sender, EventArgs e) {
+            try {
                 _activeProfile.MinErrorToSendNear = string.IsNullOrEmpty(txtMinErrorToSendNear.Text)
                                                         ? 0
                                                         : Convert.ToDouble(txtMinErrorToSendNear.Text);
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 MessageBox.Show(exception.Message);
                 txtMinErrorToSendNear.Text = "0";
             }
         }
 
-        private void numTerrainGrid_ValueChanged(object sender, EventArgs e)
-        {
+        private void numTerrainGrid_ValueChanged(object sender, EventArgs e) {
             _activeProfile.TerrainGrid = numTerrainGrid.Value;
         }
 
-        private void numViewDistance_ValueChanged(object sender, EventArgs e)
-        {
-            _activeProfile.ViewDistance = (int) numViewDistance.Value;
+        private void numViewDistance_ValueChanged(object sender, EventArgs e) {
+            _activeProfile.ViewDistance = (int)numViewDistance.Value;
         }
 
-        private void txtDoubleIdDetected_TextChanged(object sender, EventArgs e)
-        {
+        private void txtDoubleIdDetected_TextChanged(object sender, EventArgs e) {
             _activeProfile.DoubleIdDetected = txtDoubleIdDetected.Text;
         }
 
-        private void txtOnUserConnected_TextChanged(object sender, EventArgs e)
-        {
+        private void txtOnUserConnected_TextChanged(object sender, EventArgs e) {
             _activeProfile.OnUserConnected = txtOnUserConnected.Text;
         }
 
-        private void txtOnUserDisconnected_TextChanged(object sender, EventArgs e)
-        {
+        private void txtOnUserDisconnected_TextChanged(object sender, EventArgs e) {
             _activeProfile.OnUserDisconnected = txtOnUserConnected.Text;
         }
 
-        private void txtOnHackedData_TextChanged(object sender, EventArgs e)
-        {
+        private void txtOnHackedData_TextChanged(object sender, EventArgs e) {
             _activeProfile.OnHackedData = txtOnHackedData.Text;
         }
 
-        private void txtOnDifferentData_TextChanged(object sender, EventArgs e)
-        {
+        private void txtOnDifferentData_TextChanged(object sender, EventArgs e) {
             _activeProfile.OnDifferentData = txtOnDifferentData.Text;
         }
 
-        private void txtOnUnsignedData_TextChanged(object sender, EventArgs e)
-        {
+        private void txtOnUnsignedData_TextChanged(object sender, EventArgs e) {
             _activeProfile.OnUnsignedData = txtOnUnsignedData.Text;
         }
 
-        private void txtRegularCheck_TextChanged(object sender, EventArgs e)
-        {
+        private void txtRegularCheck_TextChanged(object sender, EventArgs e) {
             _activeProfile.RegularCheck = txtRegularCheck.Text;
         }
 
-        private void chkAutoExit_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkAutoExit_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.AutoExit = chkAutoExit.Checked;
         }
 
-        private void btnDeleteProfile_Click(object sender, EventArgs e)
-        {
+        private void btnDeleteProfile_Click(object sender, EventArgs e) {
             DeleteProfile();
         }
 
         /// <summary>
         /// Delete selected profile
         /// </summary>
-        private void DeleteProfile()
-        {
+        private void DeleteProfile() {
             int index = cmbProfiles.SelectedIndex;
             string profileName = cmbProfiles.SelectedItem.ToString();
 
-            if (index > -1)
-            {
+            if (index > -1) {
                 if (
                     MessageBox.Show("Are you sure you wish to delete the profile '" + profileName + "'?",
                                     "Delete profile?", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) ==
-                    DialogResult.Yes)
-                {
+                    DialogResult.Yes) {
                     _profileHandler.RemoveUser(index);
                     _profileIndex = 0;
                     _fileHandler.DeleteProfile(profileName);
@@ -1155,19 +968,16 @@ namespace TADST
             }
         }
 
-        private void btnResetSettings_Click(object sender, EventArgs e)
-        {
+        private void btnResetSettings_Click(object sender, EventArgs e) {
             ResetProfile();
         }
 
         /// <summary>
         /// Reset active profile to default settings
         /// </summary>
-        private void ResetProfile()
-        {
+        private void ResetProfile() {
             if (MessageBox.Show("Reset all settings to default. Are you sure?", "Reset profile?",
-                                MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
-            {
+                                MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes) {
                 _activeProfile = new Profile();
                 UpdateGui();
                 IsDirty = true;
@@ -1179,42 +989,34 @@ namespace TADST
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void IsDirtyTrueHandler(object sender, EventArgs e)
-        {
-            if (IsDirtyEnabled)
-            {
+        private void IsDirtyTrueHandler(object sender, EventArgs e) {
+            if (IsDirtyEnabled) {
                 IsDirty = true;
                 //MessageBox.Show("DIRTY!");
             }
         }
 
-        private void cmbProfiles_Enter(object sender, EventArgs e)
-        {
+        private void cmbProfiles_Enter(object sender, EventArgs e) {
             _profileIndex = cmbProfiles.SelectedIndex;
         }
 
-        private void btnBrowseExe_Click(object sender, EventArgs e)
-        {
+        private void btnBrowseExe_Click(object sender, EventArgs e) {
             BrowseServerFile();
         }
 
-        private void BrowseServerFile()
-        {
-            var fileDialog = new OpenFileDialog
-                                 {
-                                     InitialDirectory = Environment.CurrentDirectory,
-                                     Filter = "Arma Server Files|*server.exe;*server_x64.exe|Any file|*.*"
-                                 };
+        private void BrowseServerFile() {
+            var fileDialog = new OpenFileDialog {
+                InitialDirectory = Environment.CurrentDirectory,
+                Filter = "Arma Server Files|*server.exe;*server_x64.exe|Any file|*.*"
+            };
 
             fileDialog.ShowDialog();
             txtServerExe.Text = fileDialog.FileName;
         }
 
-        private void btnMonitorRpt_Click(object sender, EventArgs e)
-        {
+        private void btnMonitorRpt_Click(object sender, EventArgs e) {
             var rptFile = _fileHandler.GetRptFile();
-            if (string.IsNullOrEmpty(rptFile))
-            {
+            if (string.IsNullOrEmpty(rptFile)) {
                 MessageBox.Show("No RPT file present", "TADST", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -1222,10 +1024,8 @@ namespace TADST
             OpenMonitor(file, "Rpt");
         }
 
-        private void OpenMonitor(string monitorFile, string fileTitle)
-        {
-            if (string.IsNullOrEmpty(monitorFile))
-            {
+        private void OpenMonitor(string monitorFile, string fileTitle) {
+            if (string.IsNullOrEmpty(monitorFile)) {
                 MessageBox.Show("No " + fileTitle + "file present", "TADST", MessageBoxButtons.OK,
                                 MessageBoxIcon.Information);
                 return;
@@ -1235,78 +1035,62 @@ namespace TADST
         }
 
 
-        private void btnOpenRpt_Click(object sender, EventArgs e)
-        {
-            if (_activeProfile.ServerExePath.ToLower().EndsWith("server.exe") || _activeProfile.ServerExePath.ToLower().EndsWith("server_x64.exe"))
-            {
-                if (!_fileHandler.OpenRpt())
-                {
+        private void btnOpenRpt_Click(object sender, EventArgs e) {
+            if (_activeProfile.ServerExePath.ToLower().EndsWith("server.exe") || _activeProfile.ServerExePath.ToLower().EndsWith("server_x64.exe")) {
+                if (!_fileHandler.OpenRpt()) {
                     MessageBox.Show("No RPT file present", "TADST", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-            }
-            else
-            {
+            } else {
                 MessageBox.Show("You need to select a proper server executable first.", "TADST", MessageBoxButtons.OK,
                                 MessageBoxIcon.Information);
             }
         }
 
-        private void txtConsoleLogfile_KeyPress(object sender, KeyPressEventArgs e)
-        {
+        private void txtConsoleLogfile_KeyPress(object sender, KeyPressEventArgs e) {
             CheckKeyForFile(e);
         }
 
-        private void txtRankingFile_KeyPress(object sender, KeyPressEventArgs e)
-        {
+        private void txtRankingFile_KeyPress(object sender, KeyPressEventArgs e) {
             CheckKeyForFile(e);
         }
 
-        private void txtPidfile_KeyPress(object sender, KeyPressEventArgs e)
-        {
+        private void txtPidfile_KeyPress(object sender, KeyPressEventArgs e) {
             CheckKeyForFile(e);
         }
 
-        private void lstMissions_MouseUp(object sender, MouseEventArgs e)
-        {
+        private void lstMissions_MouseUp(object sender, MouseEventArgs e) {
             UpdateGuiSelectedMissions();
         }
 
         /// <summary>
         /// Update label with amount of selected missions
         /// </summary>
-        private void UpdateGuiSelectedMissions()
-        {
+        private void UpdateGuiSelectedMissions() {
             IEnumerable<Mission> missions = _activeProfile.Missions.Where(island => island.IsChecked);
             lblSelectedMissions.Text = missions.Count().ToString();
         }
 
-        private void btnSelectAllMissions_Click(object sender, EventArgs e)
-        {
+        private void btnSelectAllMissions_Click(object sender, EventArgs e) {
             CheckAllMissions();
         }
 
-        private void btnSelectNoneMissions_Click(object sender, EventArgs e)
-        {
+        private void btnSelectNoneMissions_Click(object sender, EventArgs e) {
             UnCheckAllMissions();
         }
 
-        private void btnInvertMissionSelection_Click(object sender, EventArgs e)
-        {
+        private void btnInvertMissionSelection_Click(object sender, EventArgs e) {
             InvertCheckedMissions();
         }
 
         /// <summary>
         /// Invert selected missions. Unselected get selected and vice versa
         /// </summary>
-        private void InvertCheckedMissions()
-        {
-            for (int index = 0; index < lstMissions.Items.Count; index++)
-            {
+        private void InvertCheckedMissions() {
+            for (int index = 0; index < lstMissions.Items.Count; index++) {
                 lstMissions.SetItemChecked(index, !lstMissions.GetItemChecked(index));
             }
 
-            for (int index = 0; index < lstMissions.Items.Count; index++)
-            {
+            for (int index = 0; index < lstMissions.Items.Count; index++) {
                 Mission mission = _activeProfile.Missions.Find(mis => mis.Name == lstMissions.Items[index].ToString());
                 mission.IsChecked = lstMissions.GetItemChecked(index);
             }
@@ -1317,10 +1101,8 @@ namespace TADST
         /// <summary>
         /// Deselect all missions
         /// </summary>
-        private void UnCheckAllMissions()
-        {
-            for (int index = 0; index < lstMissions.Items.Count; index++)
-            {
+        private void UnCheckAllMissions() {
+            for (int index = 0; index < lstMissions.Items.Count; index++) {
                 Mission mission = _activeProfile.Missions.Find(mis => mis.Name == lstMissions.Items[index].ToString());
                 mission.IsChecked = false;
                 lstMissions.SetItemChecked(index, false);
@@ -1331,10 +1113,8 @@ namespace TADST
         /// <summary>
         /// Select all missions
         /// </summary>
-        private void CheckAllMissions()
-        {
-            for (int index = 0; index < lstMissions.Items.Count; index++)
-            {
+        private void CheckAllMissions() {
+            for (int index = 0; index < lstMissions.Items.Count; index++) {
                 Mission mission = _activeProfile.Missions.Find(mis => mis.Name == lstMissions.Items[index].ToString());
                 mission.IsChecked = true;
                 lstMissions.SetItemChecked(index, true);
@@ -1342,17 +1122,14 @@ namespace TADST
             UpdateGuiSelectedMissions();
         }
 
-        private void cmbMissionFilter_SelectionChangeCommitted(object sender, EventArgs e)
-        {
+        private void cmbMissionFilter_SelectionChangeCommitted(object sender, EventArgs e) {
             UpdateGuiMissions();
         }
 
-        private void lstMissions_ItemCheck(object sender, ItemCheckEventArgs e)
-        {
+        private void lstMissions_ItemCheck(object sender, ItemCheckEventArgs e) {
             int index = lstMissions.SelectedIndex;
 
-            if (index > -1)
-            {
+            if (index > -1) {
                 Mission mission = _activeProfile.Missions.Find(mis => mis.Name == lstMissions.Items[index].ToString());
                 mission.IsChecked = Convert.ToBoolean(e.NewValue);
                 //mission.Difficulty = cmbDifficulty.SelectedIndex;
@@ -1361,29 +1138,24 @@ namespace TADST
             }
         }
 
-        private void btnRefreshMissions_Click(object sender, EventArgs e)
-        {
+        private void btnRefreshMissions_Click(object sender, EventArgs e) {
             _activeProfile.ScanMissions();
             UpdateGuiMissionFilter();
             UpdateGuiMissions();
         }
 
-        private void txtMotd_TextChanged(object sender, EventArgs e)
-        {
+        private void txtMotd_TextChanged(object sender, EventArgs e) {
             _activeProfile.Motd.Clear();
-            _activeProfile.Motd.AddRange(txtMotd.Text.Split(new[] {Environment.NewLine}, StringSplitOptions.None));
+            _activeProfile.Motd.AddRange(txtMotd.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.None));
         }
 
-        private void btnHelp_Click(object sender, EventArgs e)
-        {
+        private void btnHelp_Click(object sender, EventArgs e) {
             var info = new InformationForm();
             info.ShowDialog();
         }
 
-        private void txtRequiredBuild_DoubleClick(object sender, EventArgs e)
-        {
-            if (File.Exists(txtServerExe.Text))
-            {
+        private void txtRequiredBuild_DoubleClick(object sender, EventArgs e) {
+            if (File.Exists(txtServerExe.Text)) {
                 string serverPath = txtServerExe.Text; // get server exe filepath
                 int index = serverPath.LastIndexOf(@"\", StringComparison.Ordinal) + 1;
                 // get index of filename in string
@@ -1392,8 +1164,7 @@ namespace TADST
 
                 // set game exe filename
                 string exeName;
-                switch (serverExeName)
-                {
+                switch (serverExeName) {
                     case "arma2oaserver.exe":
                         exeName = serverExePath + "arma2oa.exe";
                         break;
@@ -1411,8 +1182,7 @@ namespace TADST
             }
         }
 
-        private void btnMissionUp_Click(object sender, EventArgs e)
-        {
+        private void btnMissionUp_Click(object sender, EventArgs e) {
             if (lstMissions.SelectedIndex < 0)
                 return;
 
@@ -1426,16 +1196,14 @@ namespace TADST
             IsDirty = true;
         }
 
-        private void btnMissionDown_Click(object sender, EventArgs e)
-        {
+        private void btnMissionDown_Click(object sender, EventArgs e) {
             if (lstMissions.SelectedIndex < 0)
                 return;
 
             int selectedIndex = lstMissions.SelectedIndex;
             int targetIndex = lstMissions.SelectedIndex + 1;
 
-            if (targetIndex < lstMissions.Items.Count)
-            {
+            if (targetIndex < lstMissions.Items.Count) {
                 _activeProfile.Missions.Swap(selectedIndex, targetIndex);
                 lstMissions.SwapItems(selectedIndex, targetIndex);
 
@@ -1446,10 +1214,8 @@ namespace TADST
             }
         }
 
-        private void lstMissions_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (lstMissions.SelectedItem == null)
-            {
+        private void lstMissions_MouseDown(object sender, MouseEventArgs e) {
+            if (lstMissions.SelectedItem == null) {
                 return;
             }
 
@@ -1457,8 +1223,7 @@ namespace TADST
             updateMissionDiffCmb();
         }
 
-        private void lstMissions_DragOver(object sender, DragEventArgs e)
-        {
+        private void lstMissions_DragOver(object sender, DragEventArgs e) {
             e.Effect = DragDropEffects.Move;
 
             Point point = lstMissions.PointToClient(new Point(e.X, e.Y));
@@ -1466,41 +1231,33 @@ namespace TADST
             int index = lstMissions.IndexFromPoint(point);
             int selectedIndex = lstMissions.SelectedIndex;
 
-            if (index < 0)
-            {
+            if (index < 0) {
                 index = selectedIndex;
             }
 
-            if (index != selectedIndex)
-            {
+            if (index != selectedIndex) {
                 _activeProfile.Missions.Swap(selectedIndex, index);
                 lstMissions.SwapItems(selectedIndex, index);
                 lstMissions.SelectedIndex = index;
                 IsDirty = true;
             }
 
-            if (point.Y <= (Font.Height*2))
-            {
+            if (point.Y <= (Font.Height * 2)) {
                 lstMissions.TopIndex -= 1;
-            }
-            else if (point.Y >= lstMissions.Height - (Font.Height*2))
-            {
+            } else if (point.Y >= lstMissions.Height - (Font.Height * 2)) {
                 lstMissions.TopIndex += 1;
             }
         }
 
-        private void btnSort_Click(object sender, EventArgs e)
-        {
+        private void btnSort_Click(object sender, EventArgs e) {
             _activeProfile.SortMissions();
             UpdateGuiMissions();
         }
 
-        private void lstMods_ItemCheck(object sender, ItemCheckEventArgs e)
-        {
+        private void lstMods_ItemCheck(object sender, ItemCheckEventArgs e) {
             var index = lstMods.SelectedIndex;
 
-            if (index > -1)
-            {
+            if (index > -1) {
                 var mod = _activeProfile.Mods.Find(m => m.Name == lstMods.Items[index].ToString());
                 mod.IsChecked = Convert.ToBoolean(e.NewValue);
                 UpdateGuiSelectedMods();
@@ -1509,18 +1266,15 @@ namespace TADST
             }
         }
 
-        private void lstMods_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (lstMods.SelectedItem == null)
-            {
+        private void lstMods_MouseDown(object sender, MouseEventArgs e) {
+            if (lstMods.SelectedItem == null) {
                 return;
             }
 
             lstMods.DoDragDrop(lstMods.SelectedItem, DragDropEffects.Move);
         }
 
-        private void lstMods_DragOver(object sender, DragEventArgs e)
-        {
+        private void lstMods_DragOver(object sender, DragEventArgs e) {
             if (e.Data.GetDataPresent(DataFormats.FileDrop)) return;
 
             e.Effect = DragDropEffects.Move;
@@ -1530,13 +1284,11 @@ namespace TADST
             int index = lstMods.IndexFromPoint(point);
             int selectedIndex = lstMods.SelectedIndex;
 
-            if (index < 0)
-            {
+            if (index < 0) {
                 index = selectedIndex;
             }
 
-            if (index != selectedIndex)
-            {
+            if (index != selectedIndex) {
                 _activeProfile.Mods.Swap(selectedIndex, index);
                 lstMods.SwapItems(selectedIndex, index);
                 lstMods.SelectedIndex = index;
@@ -1544,21 +1296,16 @@ namespace TADST
                 IsDirty = true;
             }
 
-            if (point.Y <= (Font.Height*2))
-            {
+            if (point.Y <= (Font.Height * 2)) {
                 lstMods.TopIndex -= 1;
-            }
-            else if (point.Y >= lstMods.Height - (Font.Height*2))
-            {
+            } else if (point.Y >= lstMods.Height - (Font.Height * 2)) {
                 lstMods.TopIndex += 1;
             }
         }
 
 
-        private void modUpBTN_Click(object sender, EventArgs e)
-        {
-            if (lstMods.SelectedIndex >= 0)
-            {
+        private void modUpBTN_Click(object sender, EventArgs e) {
+            if (lstMods.SelectedIndex >= 0) {
                 int selectedIndex = lstMods.SelectedIndex;
                 int targetIndex = lstMods.SelectedIndex - 1;
                 _activeProfile.Mods.Swap(selectedIndex, targetIndex);
@@ -1569,15 +1316,12 @@ namespace TADST
             }
         }
 
-        private void modDownBTN_Click(object sender, EventArgs e)
-        {
-            if (lstMods.SelectedIndex >= 0)
-            {
+        private void modDownBTN_Click(object sender, EventArgs e) {
+            if (lstMods.SelectedIndex >= 0) {
                 int selectedIndex = lstMods.SelectedIndex;
                 int targetIndex = lstMods.SelectedIndex + 1;
 
-                if (targetIndex < lstMods.Items.Count)
-                {
+                if (targetIndex < lstMods.Items.Count) {
                     _activeProfile.Mods.Swap(selectedIndex, targetIndex);
                     lstMods.SwapItems(selectedIndex, targetIndex);
                     lstMods.SelectedIndex = targetIndex < lstMods.Items.Count ? targetIndex : lstMods.Items.Count - 1;
@@ -1586,8 +1330,7 @@ namespace TADST
             }
         }
 
-        private void removeModBTN_Click(object sender, EventArgs e)
-        {
+        private void removeModBTN_Click(object sender, EventArgs e) {
             var index = lstMods.SelectedIndex;
             if (index < 0) return;
 
@@ -1600,18 +1343,15 @@ namespace TADST
             lstMods.SelectedIndex = index;
         }
 
-        private void btnSelectAllMods_Click(object sender, EventArgs e)
-        {
+        private void btnSelectAllMods_Click(object sender, EventArgs e) {
             CheckAllMods();
         }
 
         /// <summary>
         /// Select all mods
         /// </summary>
-        private void CheckAllMods()
-        {
-            for (int index = 0; index < lstMods.Items.Count; index++)
-            {
+        private void CheckAllMods() {
+            for (int index = 0; index < lstMods.Items.Count; index++) {
                 Mod mod = _activeProfile.Mods.Find(m => m.Name == lstMods.Items[index].ToString());
                 mod.IsChecked = true;
                 lstMods.SetItemChecked(index, true);
@@ -1622,15 +1362,12 @@ namespace TADST
         /// <summary>
         /// Invert selected mods. Unselected get selected and vice versa
         /// </summary>
-        private void InvertCheckedMods()
-        {
-            for (var index = 0; index < lstMods.Items.Count; index++)
-            {
+        private void InvertCheckedMods() {
+            for (var index = 0; index < lstMods.Items.Count; index++) {
                 lstMods.SetItemChecked(index, !lstMods.GetItemChecked(index));
             }
 
-            for (var index = 0; index < lstMods.Items.Count; index++)
-            {
+            for (var index = 0; index < lstMods.Items.Count; index++) {
                 var mod = _activeProfile.Mods.Find(m => m.Name == lstMods.Items[index].ToString());
                 mod.IsChecked = lstMods.GetItemChecked(index);
             }
@@ -1641,10 +1378,8 @@ namespace TADST
         /// <summary>
         /// Deselect all mods
         /// </summary>
-        private void UnCheckAllMods()
-        {
-            for (int index = 0; index < lstMods.Items.Count; index++)
-            {
+        private void UnCheckAllMods() {
+            for (int index = 0; index < lstMods.Items.Count; index++) {
                 Mod mod = _activeProfile.Mods.Find(m => m.Name == lstMods.Items[index].ToString());
                 mod.IsChecked = false;
                 lstMods.SetItemChecked(index, false);
@@ -1652,160 +1387,131 @@ namespace TADST
             UpdateGuiSelectedMods();
         }
 
-        private void btnSelectNoneMods_Click(object sender, EventArgs e)
-        {
+        private void btnSelectNoneMods_Click(object sender, EventArgs e) {
             UnCheckAllMods();
         }
 
-        private void btnInvertMods_Click(object sender, EventArgs e)
-        {
+        private void btnInvertMods_Click(object sender, EventArgs e) {
             InvertCheckedMods();
         }
 
-        private void btnAddModFolder_Click(object sender, EventArgs e)
-        {
-            var folderDialog = new FolderBrowserDialog();
+        private void btnAddModFolder_Click(object sender, EventArgs e) {
+            FolderBrowserDialog folderDialog = new FolderBrowserDialog();
+
+            if (!String.IsNullOrEmpty(this.oldSelectedPath)) {
+                folderDialog.SelectedPath = this.oldSelectedPath;
+            }
+
             folderDialog.ShowDialog();
 
             var path = folderDialog.SelectedPath;
 
-            if (!string.IsNullOrEmpty(path))
-            {
+            if (!string.IsNullOrEmpty(path)) {
+                this.oldSelectedPath = path;
+
                 _activeProfile.Mods.Insert(0, new Mod(path, true));
                 UpdateGuiMods();
                 IsDirty = true;
             }
         }
 
-        private void btnRefreshMods_Click(object sender, EventArgs e)
-        {
+        private void btnRefreshMods_Click(object sender, EventArgs e) {
             _activeProfile.ScanMods();
             UpdateGuiMods();
         }
 
-        private void btnSortMods_Click(object sender, EventArgs e)
-        {
+        private void btnSortMods_Click(object sender, EventArgs e) {
             _activeProfile.SortMods();
             UpdateGuiMods();
         }
 
-        private void btnOpenNetLog_Click(object sender, EventArgs e)
-        {
-            if (!_fileHandler.OpenNetlog())
-            {
+        private void btnOpenNetLog_Click(object sender, EventArgs e) {
+            if (!_fileHandler.OpenNetlog()) {
                 MessageBox.Show("No netlog file present", "TADST", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
-        private void btnDeleteNetLog_Click(object sender, EventArgs e)
-        {
+        private void btnDeleteNetLog_Click(object sender, EventArgs e) {
             if (MessageBox.Show("Delete 'net.log'? Are you sure?",
-                                "Delete netlog", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
-            {
+                                "Delete netlog", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes) {
                 _fileHandler.DeleteNetLog();
             }
         }
 
-        private void btnRotateNetLog_Click(object sender, EventArgs e)
-        {
+        private void btnRotateNetLog_Click(object sender, EventArgs e) {
             var newName = "net_" + DateTime.Now.ToShortDateString() + "_" +
                           DateTime.Now.ToLongTimeString().Replace(":", "-").Trim() + ".log";
 
             if (MessageBox.Show("Rotate netlog file? This will rename current 'net.log' file to '" + newName + "'",
-                                "Delete netlog", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
-            {
+                                "Delete netlog", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes) {
                 _fileHandler.RotateNetLog(newName);
             }
         }
 
-        private void btnOpenLogFile_Click(object sender, EventArgs e)
-        {
-            if (!_fileHandler.OpenLogFile())
-            {
+        private void btnOpenLogFile_Click(object sender, EventArgs e) {
+            if (!_fileHandler.OpenLogFile()) {
                 MessageBox.Show("No console log file present", "TADST", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
-        private void btnOpenRankingFile_Click(object sender, EventArgs e)
-        {
-            if (!_fileHandler.OpenRankingFile())
-            {
+        private void btnOpenRankingFile_Click(object sender, EventArgs e) {
+            if (!_fileHandler.OpenRankingFile()) {
                 MessageBox.Show("No ranking file present", "TADST", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
-        private void btnOpenPidFile_Click(object sender, EventArgs e)
-        {
-            if (!_fileHandler.OpenPidFile())
-            {
+        private void btnOpenPidFile_Click(object sender, EventArgs e) {
+            if (!_fileHandler.OpenPidFile()) {
                 MessageBox.Show(
                     "No Process Index file present. The PID file only exists when server is running and is deleted when server is terminated.",
                     "TADST", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
-        private void txtConsoleLogfile_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtConsoleLogfile_DoubleClick(object sender, EventArgs e) {
             txtConsoleLogfile.Text = "logfile_console.log";
         }
 
-        private void txtRankingFile_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtRankingFile_DoubleClick(object sender, EventArgs e) {
             txtRankingFile.Text = "ranking.log";
         }
 
-        private void txtPidfile_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtPidfile_DoubleClick(object sender, EventArgs e) {
             txtPidfile.Text = "pid.log";
         }
 
-        private void btnLaunch_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (_fileHandler.LaunchServer(!chkStartAsIs.Checked))
-                {
-                    if (_activeProfile.AutoExit)
-                    {
+        private void btnLaunch_Click(object sender, EventArgs e) {
+            try {
+                if (_fileHandler.LaunchServer(!chkStartAsIs.Checked)) {
+                    if (_activeProfile.AutoExit) {
                         IsDirtyEnabled = false;
                         Close();
                         IsDirtyEnabled = true;
                     }
-                }
-                else
-                {
+                } else {
                     MessageBox.Show("You must select a valid server executable first", "No server exe",
                                     MessageBoxButtons.OK,
                                     MessageBoxIcon.Information);
                     txtServerExe.Focus();
                     BrowseServerFile();
                 }
-            }
-            catch (IOException exeption)
-            {
+            } catch (IOException exeption) {
                 MessageBox.Show(exeption.Message);
             }
         }
 
-        private void btnExport_Click(object sender, EventArgs e)
-        {
-            try
-            {
+        private void btnExport_Click(object sender, EventArgs e) {
+            try {
                 ExportFiles();
-            }
-            catch (IOException exception)
-            {
+            } catch (IOException exception) {
                 MessageBox.Show(exception.Message);
             }
         }
 
-        private void ExportFiles()
-        {
-            var folderBrowserDialog = new FolderBrowserDialog
-                                          {Description = "Choose target folder to save config files."};
+        private void ExportFiles() {
+            var folderBrowserDialog = new FolderBrowserDialog { Description = "Choose target folder to save config files." };
 
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
-            {
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK) {
                 _fileHandler.ExportFiles(folderBrowserDialog.SelectedPath);
             }
         }
@@ -1820,21 +1526,16 @@ namespace TADST
                 lstMods.TopIndex += 1;
         }*/
 
-        private void btnPreview_Click(object sender, EventArgs e)
-        {
-            try
-            {
+        private void btnPreview_Click(object sender, EventArgs e) {
+            try {
                 _fileHandler.CreateConfigFiles();
                 Process.Start(Path.Combine(Environment.CurrentDirectory, "TADST", _activeProfile.ProfileName));
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 MessageBox.Show(exception.Message);
             }
         }
 
-        private void txtServerExe_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtServerExe_DoubleClick(object sender, EventArgs e) {
             var pathOa = Path.Combine(Environment.CurrentDirectory, "arma2oaserver.exe");
             var pathOaBeta = Path.Combine(Environment.CurrentDirectory, "Expansion", "beta", "arma2oaserver.exe");
             var pathA3 = Path.Combine(Environment.CurrentDirectory, "arma3server.exe");
@@ -1847,125 +1548,99 @@ namespace TADST
                 txtServerExe.Text = pathA3;
         }
 
-        private void txtServerName_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtServerName_DoubleClick(object sender, EventArgs e) {
             var windowsIdentity = System.Security.Principal.WindowsIdentity.GetCurrent();
             var userName = windowsIdentity != null ? windowsIdentity.Name : _activeProfile.ProfileName;
 
-            if (userName.Contains("\\"))
-            {
+            if (userName.Contains("\\")) {
                 userName = userName.Substring(userName.LastIndexOf('\\') + 1);
             }
 
             txtServerName.Text = userName + "'s Server";
         }
 
-        private void btnDeleteRpt_Click(object sender, EventArgs e)
-        {
+        private void btnDeleteRpt_Click(object sender, EventArgs e) {
             string file = _fileHandler.GetRptFile();
 
-            if (string.IsNullOrWhiteSpace(file))
-            {
+            if (string.IsNullOrWhiteSpace(file)) {
                 MessageBox.Show("No RPT file to delete.", "Delete RPT", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (File.Exists(Path.Combine(Environment.CurrentDirectory, "TADST", _activeProfile.ProfileName, file)))
-            {
+            if (File.Exists(Path.Combine(Environment.CurrentDirectory, "TADST", _activeProfile.ProfileName, file))) {
                 if (MessageBox.Show("Delete '" + file + "'. Are you sure?",
-                                    "Delete RPT", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
-                {
-                    try
-                    {
+                                    "Delete RPT", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes) {
+                    try {
                         _fileHandler.DeleteRpt();
-                    }
-                    catch (Exception exception)
-                    {
+                    } catch (Exception exception) {
                         MessageBox.Show(exception.Message);
                     }
                 }
-            }
-            else
-            {
+            } else {
                 MessageBox.Show("No '" + file + "' file present");
             }
         }
 
-        private void chkStartAsIs_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkStartAsIs_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.LaunchAsIs = chkStartAsIs.Checked;
 
-            if (chkStartAsIs.Checked)
-            {
+            if (chkStartAsIs.Checked) {
                 var info =
                     new AsIsInfoForm(Path.Combine(Environment.CurrentDirectory, "TADST", _activeProfile.ProfileName));
                 info.ShowDialog();
             }
         }
 
-        private void txtExtraParameters_TextChanged(object sender, EventArgs e)
-        {
+        private void txtExtraParameters_TextChanged(object sender, EventArgs e) {
             _activeProfile.ExtraParameters = txtExtraParameters.Text;
             UpdateGuiStartupParameters();
         }
 
-        private void txtExtraParameters_Click(object sender, EventArgs e)
-        {
+        private void txtExtraParameters_Click(object sender, EventArgs e) {
             _activeProfile.ExtraParameters = txtExtraParameters.Text;
             UpdateGuiStartupParameters();
         }
 
-        private void txtPort_TextChanged_1(object sender, EventArgs e)
-        {
-            try
-            {
+        private void txtPort_TextChanged_1(object sender, EventArgs e) {
+            try {
                 _activeProfile.Port = string.IsNullOrEmpty(txtPort.Text) ? 0 : Convert.ToInt32(txtPort.Text);
                 UpdateGuiStartupParameters();
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 MessageBox.Show(exception.Message);
                 txtPort.Text = "0";
             }
         }
 
-        private void txtPort_KeyPress(object sender, KeyPressEventArgs e)
-        {
+        private void txtPort_KeyPress(object sender, KeyPressEventArgs e) {
             CheckIfKeyIsDigit(e);
         }
 
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e) {
             if (!IsDirty) return;
             e.Cancel = MessageBox.Show("Close without saving changes. Are you sure?", "Close application",
                                        MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) != DialogResult.Yes;
         }
 
-        private void lstMods_DragDrop(object sender, DragEventArgs e)
-        {
+        private void lstMods_DragDrop(object sender, DragEventArgs e) {
             if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
 
-            var names = (string[]) e.Data.GetData(DataFormats.FileDrop, false);
+            var names = (string[])e.Data.GetData(DataFormats.FileDrop, false);
 
-            foreach (var name in names)
-            {
-                _activeProfile.Mods.Insert(0, new Mod {Name = name, IsChecked = true});
+            foreach (var name in names) {
+                _activeProfile.Mods.Insert(0, new Mod { Name = name, IsChecked = true });
             }
 
             UpdateGuiMods();
         }
 
-        private void lstMods_DragEnter(object sender, DragEventArgs e)
-        {
+        private void lstMods_DragEnter(object sender, DragEventArgs e) {
             e.Effect = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.All : DragDropEffects.None;
         }
 
-        private void btnMonitorNetLog_Click(object sender, EventArgs e)
-        {
+        private void btnMonitorNetLog_Click(object sender, EventArgs e) {
             var file = Path.Combine(Environment.CurrentDirectory, "net.log");
 
-            if (!File.Exists(file))
-            {
+            if (!File.Exists(file)) {
                 MessageBox.Show("No net log file present", "TADST", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -1973,166 +1648,134 @@ namespace TADST
             OpenMonitor(file, "Netlog");
         }
 
-        private void txtRequiredBuild_KeyPress(object sender, KeyPressEventArgs e)
-        {
+        private void txtRequiredBuild_KeyPress(object sender, KeyPressEventArgs e) {
             CheckIfKeyIsDigit(e);
         }
 
-        private void txtPort_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtPort_DoubleClick(object sender, EventArgs e) {
             txtPort.Text = "2302";
         }
 
 
-        private void txtMaxMessagesSend_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtMaxMessagesSend_DoubleClick(object sender, EventArgs e) {
             txtMaxMessagesSend.Text = "128";
         }
 
-        private void txtMaxSizeGuaranteed_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtMaxSizeGuaranteed_DoubleClick(object sender, EventArgs e) {
             txtMaxSizeGuaranteed.Text = "512";
         }
 
-        private void txtMaxSizeNonguaranteed_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtMaxSizeNonguaranteed_DoubleClick(object sender, EventArgs e) {
             txtMaxSizeNonguaranteed.Text = "256";
         }
 
-        private void txtMinBandwidth_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtMinBandwidth_DoubleClick(object sender, EventArgs e) {
             txtMinBandwidth.Text = "128";
         }
 
-        private void txtMaxBandwidth_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtMaxBandwidth_DoubleClick(object sender, EventArgs e) {
             txtMaxBandwidth.Text = "2000";
         }
 
-        private void txtMinErrorToSend_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtMinErrorToSend_DoubleClick(object sender, EventArgs e) {
             txtMinErrorToSend.Text = 0.001.ToString();
         }
 
-        private void txtMinErrorToSendNear_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtMinErrorToSendNear_DoubleClick(object sender, EventArgs e) {
             txtMinErrorToSendNear.Text = 0.01.ToString();
         }
 
-        private void txtMaxCustomFileSize_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtMaxCustomFileSize_DoubleClick(object sender, EventArgs e) {
             txtMaxCustomFileSize.Text = "160";
         }
 
-        private void txtPassword_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtPassword_DoubleClick(object sender, EventArgs e) {
             txtPassword.Text = Utilities.CreateRandomPassword(5);
         }
 
-        private void txtAdminPassword_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtAdminPassword_DoubleClick(object sender, EventArgs e) {
             txtAdminPassword.Text = Utilities.CreateRandomPassword(6);
         }
 
-        private void txtMaxPacketSize_Click(object sender, EventArgs e)
-        {
+        private void txtMaxPacketSize_Click(object sender, EventArgs e) {
             txtPerformanceInfo.Text =
                 "Maximal size of packet sent over network.\n\nUse only if your router or ISP enforce lower packet size and You have connectivity issues with game. \n\nDesync might happen if used MaxSizeGuaranteed/MaxSizeNonguaranteed values over the maxPacketSize. \n\nmaxPacketSize default reduced from 1490 to 1400 since 1.60, thus MaxSize... values over 1300 could be affected negatively.\n\nDefault: 1400.";
         }
 
-        private void txtMaxPacketSize_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
+        private void txtMaxPacketSize_TextChanged(object sender, EventArgs e) {
+            try {
                 _activeProfile.MaxPacketSize = string.IsNullOrEmpty(txtMaxPacketSize.Text)
                                                    ? 0
                                                    : Convert.ToInt32(txtMaxPacketSize.Text);
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 MessageBox.Show(exception.Message);
                 txtMaxPacketSize.Text = "0";
             }
         }
 
 
-        private void chkBeta_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkBeta_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.Beta = chkBeta.Checked;
             UpdateGuiStartupParameters();
         }
 
-        private void cmbDefaultDifficulty_SelectedIndexChanged(object sender, EventArgs e)
-        {
+        private void cmbDefaultDifficulty_SelectedIndexChanged(object sender, EventArgs e) {
             _activeProfile.DefaultDifficulty = cmbDefaultDifficulty.SelectedIndex;
         }
 
 
-        private void chkBattlEye_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkBattlEye_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.BattlEye = chkBattlEye.Checked;
         }
 
-        private void txtHeadlessIp_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtHeadlessIp_DoubleClick(object sender, EventArgs e) {
             txtHeadlessIp.Text = "127.0.0.1";
         }
 
-        private void chkHeadlessEnabled_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkHeadlessEnabled_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.HeadlessEnabled = chkHeadlessEnabled.Checked;
             txtHeadlessIp.Enabled = chkHeadlessEnabled.Checked;
             txtLocalIp.Enabled = chkHeadlessEnabled.Checked;
         }
 
-        private void lstMissions_SelectedIndexChanged(object sender, EventArgs e)
-        {
+        private void lstMissions_SelectedIndexChanged(object sender, EventArgs e) {
             updateMissionDiffCmb();
         }
 
-        private void updateMissionDiffCmb()
-        {
+        private void updateMissionDiffCmb() {
             int index = lstMissions.SelectedIndex;
 
-            if (index > -1)
-            {
+            if (index > -1) {
                 Mission mission = _activeProfile.Missions.Find(mis => mis.Name == lstMissions.Items[index].ToString());
                 cmbDifficulty.SelectedIndex = mission.Difficulty;
             }
         }
 
-        private void btnAllMissionsDiff_Click(object sender, EventArgs e)
-        {
-            foreach (var mission in _activeProfile.Missions)
-            {
+        private void btnAllMissionsDiff_Click(object sender, EventArgs e) {
+            foreach (var mission in _activeProfile.Missions) {
                 mission.Difficulty = cmbDifficulty.SelectedIndex;
             }
 
             IsDirty = true;
         }
 
-        private void txtMaxPacketSize_DoubleClick(object sender, EventArgs e)
-        {
+        private void txtMaxPacketSize_DoubleClick(object sender, EventArgs e) {
             txtMaxPacketSize.Text = "1400";
         }
 
-        private void txtHeadlessIp_TextChanged(object sender, EventArgs e)
-        {
+        private void txtHeadlessIp_TextChanged(object sender, EventArgs e) {
             _activeProfile.HeadlessIps = txtHeadlessIp.Text;
         }
 
-        private void chkEnableHT_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkEnableHT_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.EnableHt = chkEnableHT.Checked;
         }
 
-        private void btnPortCheck_Click(object sender, EventArgs e)
-        {
+        private void btnPortCheck_Click(object sender, EventArgs e) {
             CheckPorts();
         }
 
-        private void CheckPorts()
-        {
+        private void CheckPorts() {
             MessageBox.Show("Open or forward the following UDP ports to this computer in your router/firewall:"
                             + Environment.NewLine
                             + _activeProfile.Port + " - Arma3 Game Port" + Environment.NewLine
@@ -2145,48 +1788,38 @@ namespace TADST
                             (_activeProfile.Port + 10));
         }
 
-        private void txtServerCommandPassword_TextChanged(object sender, EventArgs e)
-        {
+        private void txtServerCommandPassword_TextChanged(object sender, EventArgs e) {
             _activeProfile.ServerCommandPassword = txtServerCommandPassword.Text;
         }
 
-        private void txtServerCommandPassword_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
+        private void txtServerCommandPassword_MouseDoubleClick(object sender, MouseEventArgs e) {
             txtServerCommandPassword.Text = Utilities.CreateRandomPassword(5);
         }
 
-        private void chkEnableUpnp_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkEnableUpnp_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.Upnp = chkEnableUpnp.Checked;
         }
 
-        private void cmbAllowedFilePatching_SelectedIndexChanged(object sender, EventArgs e)
-        {
+        private void cmbAllowedFilePatching_SelectedIndexChanged(object sender, EventArgs e) {
             _activeProfile.AllowFilePatching = cmbAllowedFilePatching.SelectedIndex;
         }
 
-        private void txtLocalIp_TextChanged(object sender, EventArgs e)
-        {
+        private void txtLocalIp_TextChanged(object sender, EventArgs e) {
             _activeProfile.LocalIps = txtLocalIp.Text;
         }
 
-        private void cmbAILevelPreset_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (cmbAILevelPreset.SelectedIndex == 3)
-            {
+        private void cmbAILevelPreset_SelectedIndexChanged(object sender, EventArgs e) {
+            if (cmbAILevelPreset.SelectedIndex == 3) {
                 numSkillAI.Enabled = true;
                 numPrecisionAI.Enabled = true;
-            }
-            else
-            {
+            } else {
                 numSkillAI.Enabled = false;
                 numPrecisionAI.Enabled = false;
             }
             this.GetCurrentDifficulty().AILevelPreset = this.cmbAILevelPreset.SelectedIndex;
         }
 
-        private void cmbAILevelPreset_Click(object sender, EventArgs e)
-        {
+        private void cmbAILevelPreset_Click(object sender, EventArgs e) {
             lblProfileDifficultyInfo.Text = "AI Level Preset" + Environment.NewLine + Environment.NewLine +
                                             "0 - AI Level Low" + Environment.NewLine +
                                             "1 - AI Level Normal" + Environment.NewLine +
@@ -2194,67 +1827,57 @@ namespace TADST
                                             "3 - AI Level Custom" + Environment.NewLine;
         }
 
-        private void chkLoopback_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkLoopback_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.Loopback = chkLoopback.Checked;
         }
 
-        private void chkAutoinit_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkAutoinit_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.AutoInit = chkAutoinit.Checked;
             UpdateGuiStartupParameters();
         }
 
-        private void chkMaxPacketloss_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkMaxPacketloss_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.MaxPacketLossEnabled = numMaxPacketLoss.Enabled = chkMaxPacketloss.Checked;
         }
 
-        private void chkDisonnectTimeout_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkDisonnectTimeout_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.DisconnectTimeoutEnabled = numDisconnectTimeOut.Enabled = chkDisconnectTimeout.Checked;
         }
 
-        private void chkMaxDesync_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkMaxDesync_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.MaxDesyncEnabled = numMaxDesync.Enabled = chkMaxDesync.Checked;
         }
 
-        private void chkMaxPing_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkMaxPing_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.MaxPingEnabled = numMaxPing.Enabled = chkMaxPing.Checked;
         }
 
-        private void numMaxPing_ValueChanged(object sender, EventArgs e)
-        {
-            _activeProfile.MaxPing = (int) numMaxPing.Value;
+        private void numMaxPing_ValueChanged(object sender, EventArgs e) {
+            _activeProfile.MaxPing = (int)numMaxPing.Value;
         }
 
-        private void chkKickClientsOnSlowNetwork_CheckedChanged(object sender, EventArgs e)
-        {
+        private void chkKickClientsOnSlowNetwork_CheckedChanged(object sender, EventArgs e) {
             _activeProfile.KickClientsOnSlowNetworkEnabled = cmbKickClientsOnSlowNetwork.Enabled = chkKickClientsOnSlowNetwork.Checked;
         }
 
-        private void cmbKickClientsOnSlowNetwork_SelectedIndexChanged(object sender, EventArgs e)
-        {
+        private void cmbKickClientsOnSlowNetwork_SelectedIndexChanged(object sender, EventArgs e) {
             _activeProfile.KickClientsOnSlowNetwork = cmbKickClientsOnSlowNetwork.SelectedIndex;
         }
 
-        private void numMaxDesync_ValueChanged(object sender, EventArgs e)
-        {
-            _activeProfile.MaxDesync = (int) numMaxDesync.Value;
+        private void numMaxDesync_ValueChanged(object sender, EventArgs e) {
+            _activeProfile.MaxDesync = (int)numMaxDesync.Value;
         }
 
-        private void numMaxPacketLoss_ValueChanged(object sender, EventArgs e)
-        {
-            _activeProfile.MaxPacketLoss = (int) numMaxPacketLoss.Value;
+        private void numMaxPacketLoss_ValueChanged(object sender, EventArgs e) {
+            _activeProfile.MaxPacketLoss = (int)numMaxPacketLoss.Value;
         }
 
-        private void numDisconnectTimeOut_ValueChanged(object sender, EventArgs e)
-        {
-            _activeProfile.DisconnectTimeout = (int) numDisconnectTimeOut.Value;
+        private void numDisconnectTimeOut_ValueChanged(object sender, EventArgs e) {
+            _activeProfile.DisconnectTimeout = (int)numDisconnectTimeOut.Value;
         }
 
+        private void lstMods_SelectedIndexChanged(object sender, EventArgs e) {
 
+        }
     }
 }

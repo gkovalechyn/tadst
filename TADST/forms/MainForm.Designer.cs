@@ -1793,6 +1793,7 @@
             this.lstMods.Size = new System.Drawing.Size(515, 259);
             this.lstMods.TabIndex = 0;
             this.lstMods.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.lstMods_ItemCheck);
+            this.lstMods.SelectedIndexChanged += new System.EventHandler(this.lstMods_SelectedIndexChanged);
             this.lstMods.DragDrop += new System.Windows.Forms.DragEventHandler(this.lstMods_DragDrop);
             this.lstMods.DragEnter += new System.Windows.Forms.DragEventHandler(this.lstMods_DragEnter);
             this.lstMods.DragOver += new System.Windows.Forms.DragEventHandler(this.lstMods_DragOver);
