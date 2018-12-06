@@ -1404,10 +1404,21 @@ namespace TADST {
 
             if (folderDialog.ShowDialog() == DialogResult.OK) {
                 string path = folderDialog.SelectedPath;
+                string[] parts = path.Split('/');
 
                 this.oldSelectedPath = path;
 
-                _activeProfile.Mods.Insert(0, new Mod(path, true));
+                if (parts[parts.Length - 1].StartsWith("@")) {
+                    _activeProfile.Mods.Insert(0, new Mod(path, true));
+                } else {
+                    DirectoryInfo info = new DirectoryInfo(path);
+                    DirectoryInfo[] modFolders = info.GetDirectories("@*");//All directories starting with @
+
+                    foreach (DirectoryInfo modFolder in modFolders) {
+                        _activeProfile.Mods.Insert(0, new Mod(modFolder.FullName, true));
+                    }
+                }
+
                 UpdateGuiMods();
                 IsDirty = true;
             }
