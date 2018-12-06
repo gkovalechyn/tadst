@@ -1402,11 +1402,9 @@ namespace TADST {
                 folderDialog.SelectedPath = this.oldSelectedPath;
             }
 
-            folderDialog.ShowDialog();
+            if (folderDialog.ShowDialog() == DialogResult.OK) {
+                string path = folderDialog.SelectedPath;
 
-            var path = folderDialog.SelectedPath;
-
-            if (!string.IsNullOrEmpty(path)) {
                 this.oldSelectedPath = path;
 
                 _activeProfile.Mods.Insert(0, new Mod(path, true));
