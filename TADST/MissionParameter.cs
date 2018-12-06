@@ -1,16 +1,13 @@
 ﻿using System;
 
-namespace TADST
-{
+namespace TADST {
     [Serializable]
-    class MissionParameter
-    {
+    class MissionParameter {
         public string Name { get; set; }
         public string Value { get; set; }
 
-        public override string ToString()
-        {
-            return Name + " = " + Value + ";"; 
+        public override string ToString() {
+            return Name + " = " + Value + ";";
         }
     }
 

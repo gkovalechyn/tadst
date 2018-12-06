@@ -1,45 +1,37 @@
 ﻿using System;
 
-namespace TADST
-{
+namespace TADST {
     [Serializable]
-    class Mod
-    {
+    class Mod {
         private string _name;
         private bool _isChecked;
 
-        public string Name
-        {
+        public string Name {
             get { return _name; }
             set { _name = value; }
         }
 
-        public bool IsChecked
-        {
+        public bool IsChecked {
             get { return _isChecked; }
             set { _isChecked = value; }
         }
 
-        public Mod()
-        {
+        public Mod() {
             Name = "";
             IsChecked = false;
         }
 
-        public Mod(string name)
-        {
+        public Mod(string name) {
             Name = name;
             IsChecked = false;
         }
 
-        public Mod(string name, bool isChecked)
-        {
+        public Mod(string name, bool isChecked) {
             Name = name;
             IsChecked = isChecked;
         }
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return Name;
         }
     }

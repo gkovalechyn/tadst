@@ -4,10 +4,8 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace TADST
-{
-    public static class Utilities
-    {
+namespace TADST {
+    public static class Utilities {
         /// <summary>
         /// Create a deep clone of any serializable object.
         /// Used for copying profile instead of using copy constructor.
@@ -15,22 +13,17 @@ namespace TADST
         /// <typeparam name="T"></typeparam>
         /// <param name="original"></param>
         /// <returns></returns>
-        public static T DeepClone<T>(T original)
-        {
-            if (!typeof(T).IsSerializable)
-            {
+        public static T DeepClone<T>(T original) {
+            if (!typeof(T).IsSerializable) {
                 throw new ArgumentException("The type must be serializable.", "original");
             }
 
-            if (ReferenceEquals(original, null))
-            {
+            if (ReferenceEquals(original, null)) {
                 return default(T);
             }
 
-            using (var stream = new MemoryStream())
-            {
-                var formatter = new BinaryFormatter
-                {
+            using (var stream = new MemoryStream()) {
+                var formatter = new BinaryFormatter {
                     Context = new StreamingContext(StreamingContextStates.Clone)
                 };
 
@@ -46,12 +39,11 @@ namespace TADST
         /// </summary>
         /// <param name="str">String to change to title case</param>
         /// <returns>Title case formatted string</returns>
-        public static string ToMixedCase(string str)
-        {
+        public static string ToMixedCase(string str) {
             System.Globalization.CultureInfo cultureInfo = System.Threading.Thread.CurrentThread.CurrentCulture;
             System.Globalization.TextInfo textInfo = cultureInfo.TextInfo;
 
-            return textInfo.ToTitleCase(str.ToLower());    
+            return textInfo.ToTitleCase(str.ToLower());
         }
 
         /// <summary>
@@ -62,10 +54,8 @@ namespace TADST
         /// <param name="indexA">Index of first item</param>
         /// <param name="indexB">Index of second item</param>
         /// <returns>List with new order of items</returns>
-        public static IList<T> Swap<T>(this IList<T> list, int indexA, int indexB)
-        {
-            if (indexB > -1 && indexB < list.Count)
-            {
+        public static IList<T> Swap<T>(this IList<T> list, int indexA, int indexB) {
+            if (indexB > -1 && indexB < list.Count) {
                 T tmp = list[indexA];
                 list[indexA] = list[indexB];
                 list[indexB] = tmp;
@@ -80,10 +70,8 @@ namespace TADST
         /// <param name="indexA">Index of forst item</param>
         /// <param name="indexB">Index of second item</param>
         /// <returns>CheckedListBox with new item order</returns>
-        public static System.Windows.Forms.CheckedListBox SwapItems(this System.Windows.Forms.CheckedListBox lstBox, int indexA, int indexB)
-        {
-            if (indexB > -1 && indexB < lstBox.Items.Count)
-            {
+        public static System.Windows.Forms.CheckedListBox SwapItems(this System.Windows.Forms.CheckedListBox lstBox, int indexA, int indexB) {
+            if (indexB > -1 && indexB < lstBox.Items.Count) {
                 object tmpItem = lstBox.Items[indexA];
                 lstBox.Items[indexA] = lstBox.Items[indexB];
                 lstBox.Items[indexB] = tmpItem;
@@ -101,16 +89,14 @@ namespace TADST
         /// </summary>
         /// <param name="passwordLength">Length of generated password</param>
         /// <returns>Generated password of selected length</returns>
-        public static string CreateRandomPassword(int passwordLength)
-        {
+        public static string CreateRandomPassword(int passwordLength) {
             const string consonants = "bdfghjklmnprstvyw";
             const string wovels = "aeiou";
 
             var password = "";
             var randomNum = new Random();
 
-            while (password.Length < passwordLength)
-            {
+            while (password.Length < passwordLength) {
                 password += consonants[randomNum.Next(consonants.Length)];
                 if (password.Length < passwordLength)
                     password += wovels[randomNum.Next(wovels.Length)];

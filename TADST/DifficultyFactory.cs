@@ -1,17 +1,14 @@
-﻿namespace TADST
-{
+﻿namespace TADST {
     /// <summary>
     /// Creates default difficulty items
     /// </summary>
-    class DifficultyFactory
-    {
-        
+    class DifficultyFactory {
+
         /// <summary>
         /// Create Custom Settings
         /// </summary>
         /// <returns>Custom setting object</returns>
-        public DifficultySetting CreateCustomDifficulty()
-        {
+        public DifficultySetting CreateCustomDifficulty() {
             var diffSetting = new DifficultySetting(0.75m, 0.55m, 3);
 
             diffSetting.AddDifficultyItem(new DifficultyItem("Reduced Damage", "reducedDamage", false, true, "Reduced Damage\n\nDecreases damage dealt to the player and members of his group."));
